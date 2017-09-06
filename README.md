@@ -5,9 +5,7 @@ Jlink Python Programming GUI Tool
 We use Python+Pyside make a GUI programming tool. By calling JLinkARM.Dll, it can access the device via C2 and SWD interface. The EFM8 and EFM32 which are C8051 and ARM cortex M0/M3/M4 core are in the latest Segger JLinkARM.dll support list. It can download hex file, and also binary file with offset setting. 
 
 ## 2 Preparation
-Detailed information on Python + Pyside setup can be found in following link: 
-
-https://confluence.silabs.com/pages/viewpage.action?pageId=46153928
+Detailed information on Python + Pyside setup as follow
 
 ### 2.1 Install Python 2.7 32-bit
 The reason for 32-bit python is because many dll file is 32-bit version.
