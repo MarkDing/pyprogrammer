@@ -257,10 +257,10 @@ Run programmer.py in CMD console, the GUI tool displayed in screen.
 ### 4.2 Select Download File
 ![PT select][PT_select]
 
-1. Select the adapter with correct serial number in __J-link Device S/N__ Combox. 
-2. Choose SWD from __Debug IF__ Combox. 
-3. Click on __Connect__ button. 
-
+1. The part number displayed if the connection is done.  
+2. Press __Browse__ button to select a hex or bin file for flashing. 
+3. Check the __Reset MCU after flashing__ if wants device automatic reset after flashing. 
+4. Click on __Flash__ button to start firmware flashing.  
 
 ### 4.3 Flashing Device
 The Segger J-link v6.18c pop-up a progress dialog
