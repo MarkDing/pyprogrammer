@@ -1,105 +1,158 @@
-# -*- coding: utf-8 -*-
+# Copyright (C) 2017 Silicon Laboratories, Inc.
+# http://developer.silabs.com/legal/version/v11/Silicon_Labs_Software_License_Agreement.txt
+#
+# This file is part of Programmer Tool.
+#
+# PyProgrammer Tool is a free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# PyProgrammer Tool is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Programmer Tool.  If not, see <http://www.gnu.org/licenses/>.
 
-# Form implementation generated from reading ui file 'mainwindow.ui'
-#
-# Created: Thu Aug 24 18:00:40 2017
-#      by: pyside-uic 0.2.15 running on PySide 1.2.4
-#
-# WARNING! All changes made in this file will be lost!
 
 from PySide import QtCore, QtGui
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(605, 360)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
-        MainWindow.setSizePolicy(sizePolicy)
-        self.centralWidget = QtGui.QWidget(MainWindow)
+class MainWindow(QtGui.QMainWindow):
+    def __init__(self):
+        super(MainWindow, self).__init__()
+
+        self.setObjectName("MainWindow")
+
+        # Setup Window display icon
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("img/pyprogrammer.png"),QtGui.QIcon.Normal)
+        self.setWindowIcon(icon)
+
+        self.centralWidget = QtGui.QWidget(self)
         self.centralWidget.setObjectName("centralWidget")
-        self.flashMCUGroup = QtGui.QGroupBox(self.centralWidget)
-        self.flashMCUGroup.setGeometry(QtCore.QRect(10, 90, 580, 110))
-        self.flashMCUGroup.setObjectName("flashMCUGroup")
-        self.startAddrLabel = QtGui.QLabel(self.flashMCUGroup)
-        self.startAddrLabel.setGeometry(QtCore.QRect(10, 70, 120, 20))
-        self.startAddrLabel.setObjectName("startAddrLabel")
-        self.statusLabel = QtGui.QLabel(self.centralWidget)
-        self.statusLabel.setGeometry(QtCore.QRect(20, 250, 450, 15))
-        self.statusLabel.setObjectName("statusLabel")
-        self.resetMCUCheckBox = QtGui.QCheckBox(self.flashMCUGroup)
-        self.resetMCUCheckBox.setGeometry(QtCore.QRect(260, 70, 140, 20))
-        self.resetMCUCheckBox.setObjectName("resetMCUCheckBox")
-        self.pathLineEdit = QtGui.QLineEdit(self.flashMCUGroup)
-        self.pathLineEdit.setGeometry(QtCore.QRect(90, 30, 400, 20))
-        self.pathLineEdit.setObjectName("pathLineEdit")
-        self.flashButton = QtGui.QPushButton(self.flashMCUGroup)
-        self.flashButton.setGeometry(QtCore.QRect(500, 70, 75, 23))
-        self.flashButton.setObjectName("flashButton")
-        self.browseButton = QtGui.QPushButton(self.flashMCUGroup)
-        self.browseButton.setGeometry(QtCore.QRect(500, 30, 75, 23))
-        self.browseButton.setObjectName("browseButton")
-        # self.verifyUploadCheckBox = QtGui.QCheckBox(self.flashMCUGroup)
-        # self.verifyUploadCheckBox.setGeometry(QtCore.QRect(410, 70, 91, 20))
-        # self.verifyUploadCheckBox.setObjectName("verifyUploadCheckBox")
-        self.downloadFileLabel = QtGui.QLabel(self.flashMCUGroup)
-        self.downloadFileLabel.setGeometry(QtCore.QRect(10, 30, 70, 20))
-        self.downloadFileLabel.setObjectName("downloadFileLabel")
-        self.startAddrLineEdit = QtGui.QLineEdit(self.flashMCUGroup)
-        self.startAddrLineEdit.setGeometry(QtCore.QRect(140, 70, 60, 20))
-        self.startAddrLineEdit.setObjectName("startAddrLineEdit")
+        self.setCentralWidget(self.centralWidget)
 
-        self.connetGroup = QtGui.QGroupBox(self.centralWidget)
-        self.connetGroup.setGeometry(QtCore.QRect(10, 20, 580, 40))
-        self.connetGroup.setTitle("")
-        self.connetGroup.setObjectName("connetGroup")
-        self.adapterLabel = QtGui.QLabel(self.connetGroup)
-        self.adapterLabel.setGeometry(QtCore.QRect(10, 10, 50, 20))
-        self.adapterLabel.setObjectName("adapterLabel")
-        self.connectButton = QtGui.QPushButton(self.connetGroup)
-        self.connectButton.setGeometry(QtCore.QRect(55, 10, 75, 23))
-        self.connectButton.setObjectName("connectButton")
-        self.jlinkDeviceLabel = QtGui.QLabel(self.connetGroup)
-        self.jlinkDeviceLabel.setGeometry(QtCore.QRect(135, 10, 85, 20))
-        self.jlinkDeviceLabel.setObjectName("jlinkDeviceLabel")      
-        self.jlinkDeviceCombo = QtGui.QComboBox(self.connetGroup)
-        self.jlinkDeviceCombo.setGeometry(QtCore.QRect(220, 10, 85, 20))
-        self.jlinkDeviceCombo.setObjectName("jlinkDeviceCombo")
-        self.debugIFLabel = QtGui.QLabel(self.connetGroup)
-        self.debugIFLabel.setGeometry(QtCore.QRect(315, 10, 50, 20))
-        self.debugIFLabel.setObjectName("debugIFLabel")      
-        self.debugIFCombo = QtGui.QComboBox(self.connetGroup)
-        self.debugIFCombo.setGeometry(QtCore.QRect(365, 10, 50, 20))
-        self.debugIFCombo.setObjectName("debugIFCombo") 
-        self.deviceLabel = QtGui.QLabel(self.connetGroup)
-        self.deviceLabel.setGeometry(QtCore.QRect(425, 10, 150, 20))
-        self.deviceLabel.setObjectName("deviceLabel")
-        MainWindow.setCentralWidget(self.centralWidget)
-        self.mainToolBar = QtGui.QToolBar(MainWindow)
-        self.mainToolBar.setObjectName("mainToolBar")
-        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.mainToolBar)
-        self.statusBar = QtGui.QStatusBar(MainWindow)
-        self.statusBar.setObjectName("statusBar")
-        MainWindow.setStatusBar(self.statusBar)
+        self.createMenu()
+        self.createStatusBar()
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        mainLayout = QtGui.QVBoxLayout(self.centralWidget)
+        mainLayout.addWidget(self.createConnectGroup())
+        mainLayout.addWidget(self.createFlashMCUGroup())
+        self.setLayout(mainLayout)
 
-    def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Programmer Tool", None, QtGui.QApplication.UnicodeUTF8))
-        self.flashMCUGroup.setTitle(QtGui.QApplication.translate("MainWindow", "Flash MCU", None, QtGui.QApplication.UnicodeUTF8))
-        self.startAddrLabel.setText(QtGui.QApplication.translate("MainWindow", "Flash start address(hex):", None, QtGui.QApplication.UnicodeUTF8))
-        self.statusLabel.setText(QtGui.QApplication.translate("MainWindow", "Ready", None, QtGui.QApplication.UnicodeUTF8))
-        self.resetMCUCheckBox.setText(QtGui.QApplication.translate("MainWindow", "Reset MCU after flashing", None, QtGui.QApplication.UnicodeUTF8))
-        self.flashButton.setText(QtGui.QApplication.translate("MainWindow", "Flash", None, QtGui.QApplication.UnicodeUTF8))
-        self.browseButton.setText(QtGui.QApplication.translate("MainWindow", "Browse", None, QtGui.QApplication.UnicodeUTF8))
-        # self.verifyUploadCheckBox.setText(QtGui.QApplication.translate("MainWindow", "Verify upload", None, QtGui.QApplication.UnicodeUTF8))
-        self.downloadFileLabel.setText(QtGui.QApplication.translate("MainWindow", "Download File", None, QtGui.QApplication.UnicodeUTF8))
-        self.adapterLabel.setText(QtGui.QApplication.translate("MainWindow", "Adapter", None, QtGui.QApplication.UnicodeUTF8))
-        self.connectButton.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
-        self.jlinkDeviceLabel.setText(QtGui.QApplication.translate("MainWindow", "J-Link Device S/N", None, QtGui.QApplication.UnicodeUTF8))
-        self.debugIFLabel.setText(QtGui.QApplication.translate("MainWindow", "Debug IF", None, QtGui.QApplication.UnicodeUTF8))
-        self.deviceLabel.setText(QtGui.QApplication.translate("MainWindow", "Device:", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle("PyProgrammer")
+        self.setFixedSize(640, 260)
+
+    def createMenu(self):
+        self.aboutAct = QtGui.QAction("&About", self,
+                statusTip="Show the PyProgrammer's About box",
+                triggered=self.about)
+        self.helpMenu = self.menuBar().addMenu("&Help")
+        self.helpMenu.addAction(self.aboutAct)        
+
+    def createStatusBar(self):
+        self.statusBar().showMessage("Ready")
+
+    def createConnectGroup(self):
+        groupBox = QtGui.QGroupBox("Connection",self.centralWidget)
+
+        self.adapterLabel = QtGui.QLabel("Adpater")
+        self.connectButton = QtGui.QPushButton("Connect")
+        self.jlinkDeviceLabel = QtGui.QLabel("J-Link Device S/N")
+        self.jlinkDeviceCombo = QtGui.QComboBox()
+        self.debugIFLabel = QtGui.QLabel("Debug Interface")
+        self.debugIFCombo = QtGui.QComboBox()
+        self.deviceLabel = QtGui.QLabel("Device:")
+
+        # Config each widget
+        self.debugIFCombo.addItems("SWD C2".split())
+
+        layout = QtGui.QHBoxLayout()
+        layout.addWidget(self.adapterLabel)
+        layout.addWidget(self.connectButton)
+        layout.addWidget(self.jlinkDeviceLabel)
+        layout.addWidget(self.jlinkDeviceCombo)
+        layout.addWidget(self.debugIFLabel)
+        layout.addWidget(self.debugIFCombo)
+        layout.addWidget(self.deviceLabel)
+
+        # Set stretch factor for each widget
+        layout.setStretchFactor(self.jlinkDeviceCombo, 1.5)
+        layout.setStretchFactor(self.deviceLabel, 2)
+
+        groupBox.setLayout(layout)
+        return groupBox
+
+    def createBrowseGroup(self):
+        groupBox = QtGui.QGroupBox(self.centralWidget)
+
+        self.downloadFileLabel = QtGui.QLabel("Download File")
+        self.pathLineEdit = QtGui.QLineEdit()
+        self.browseButton = QtGui.QPushButton("Browse")
+
+        layout = QtGui.QHBoxLayout()
+        layout.addWidget(self.downloadFileLabel)
+        layout.addWidget(self.pathLineEdit)
+        layout.addWidget(self.browseButton)
+
+        groupBox.setLayout(layout)
+        return groupBox
+
+    def createFlashGroup(self):
+        groupBox = QtGui.QGroupBox(self.centralWidget)
+
+        self.startAddrLabel = QtGui.QLabel("Flash Start Address(hex):")
+        self.startAddrLineEdit = QtGui.QLineEdit()
+        self.resetMCUCheckBox = QtGui.QCheckBox("Reset MCU After Flashing")
+        self.eraseButton = QtGui.QPushButton("Erase")
+        self.flashButton = QtGui.QPushButton("Flash")
+
+        # Config each widget
+        self.startAddrLineEdit.setInputMask(">HHHHHHHH; ")
+        self.startAddrLineEdit.setText("00000000")
+        self.startAddrLineEdit.setAlignment(QtCore.Qt.AlignRight)
+        self.startAddrLineEdit.setReadOnly(True)
+        self.resetMCUCheckBox.setChecked(True)
+
+        layout = QtGui.QHBoxLayout()
+        layout.addWidget(self.startAddrLabel)
+        layout.addWidget(self.startAddrLineEdit)
+        layout.addStretch()
+        layout.addWidget(self.resetMCUCheckBox)
+        layout.addStretch()
+        layout.addWidget(self.eraseButton)
+        layout.addWidget(self.flashButton)
+
+        groupBox.setLayout(layout)
+        return groupBox
+
+    def createFlashMCUGroup(self):
+        groupBox = QtGui.QGroupBox("Flash MCU",self.centralWidget)
+
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(self.createBrowseGroup())
+        layout.addWidget(self.createFlashGroup())
+
+        groupBox.setLayout(layout)
+        return groupBox
+
+    def about(self):
+        QtGui.QMessageBox.about(self, "About PyProgrammer",
+                "Copyright Silicon Laboratories, Inc 2018. All rights reserved.\n\n\r"
+                "PyProgrammer v1.0 is based on Qt Pyside and SEGGER JlinkARM.\n\n\r"
+                "The PyProgrammer example demonstrates how to write a "
+                "modern GUI flash programmer applications using Qt Pyside.\n\n\r"
+                "This program uses third party libraries covered by the LGPL.\n\r"
+                "See the file LGPL.txt for details.")
+
+# Main Function
+# if __name__ == '__main__':
+#     import sys
+
+#     app = QtGui.QApplication(sys.argv)
+#     mainWin = MainWindow()
+#     mainWin.show()
+#     sys.exit(app.exec_())
 

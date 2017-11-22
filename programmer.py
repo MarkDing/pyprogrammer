@@ -18,63 +18,78 @@
 
 import sys
 import os
-from threading import Timer
 
-from PySide import QtGui
-from mainwindow import Ui_MainWindow
+from PySide import QtGui, QtCore
+from mainwindow import MainWindow
 
 import jlink
 
 
-class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
+class Programmer(MainWindow):
 
     def __init__(self):
-        QtGui.QMainWindow.__init__(self)
-        Ui_MainWindow.__init__(self)
-        self.setupUi(self)
-        self._initialize()
-        self.mainloop()
+        MainWindow.__init__(self)
 
-    def _initialize(self):
         self._jlink = jlink.JLinkDll()
         self._is_connected = False
-        self._serial_number = "0"
+        self._adapter_serial_number = "0"
+        self._initialize()
+        self.init_timer()
+ 
+
+    def _initialize(self):
         self._adapter_list = self._jlink._adapter_list
-        self.startAddrLineEdit.setInputMask(">HHHHHHHH; ")
-        self.startAddrLineEdit.setText("00000000")
-        self.debugIFCombo.addItem("SWD")
-        self.debugIFCombo.addItem("C2")
+
         self.browseButton.pressed.connect(self.browse_file)
         self.connectButton.pressed.connect(self.connect_mcu)
         self.flashButton.pressed.connect(self.flash_mcu)
+        self.eraseButton.pressed.connect(self.erase_mcu)
+        self.statusBar().showMessage("Ready")
         return None
 
     def browse_file(self):
-        file_name, filter = QtGui.QFileDialog.getOpenFileName(
-            self, 'Open Download file', "./hex_bin",
-            'Intel Hex Files(*.hex);;Binary Files(*.bin);;All Files (*)')
+        file_name, file_filter = QtGui.QFileDialog.getOpenFileName(
+            self, 'Open Download file', "",
+            'Intel Hex Files(*.hex);;Binary Files(*.bin);;All Files (*)',
+            None,
+            QtGui.QFileDialog.DontUseNativeDialog)
         if file_name:
             self.pathLineEdit.setText(file_name)
+        # Set start address editable with bin file only.
+        split_name = file_name.split(".")
+        if split_name[-1].lower() == "hex":
+            self.startAddrLineEdit.setText("00000000")
+            self.startAddrLineEdit.setReadOnly(True)
+        if split_name[-1].lower() == "bin":
+            self.startAddrLineEdit.setReadOnly(False)
         return
+
+    def init_connect_group(self):
+        self.connectButton.setText("Connect")
+        self.deviceLabel.setText("Device:  ")
+        self._is_connected = False
+        self._adapter_serial_number = "0"
 
     def connect_mcu(self):
         if self._is_connected:
+            self.init_connect_group()
             self._jlink.close()
-            self.connectButton.setText("Connect")
-            self.deviceLabel.setText("Device:  ")
-            self._is_connected = False
+            msg = "Disconnected"
         else:
             if self.jlinkDeviceCombo.count() == 0:
                 return
             serial_number = self.jlinkDeviceCombo.currentText()
             ifc = self.debugIFCombo.currentText()
-            retval = self._jlink.connect(long(serial_number), None, [ifc])
-            if retval == False:
-                self._jlink.close()
-                return
-            self.connectButton.setText("Disconnect")
-            self.deviceLabel.setText(self._jlink._part_number)
-            self._is_connected = True
+            result = self._jlink.connect(long(serial_number), ifc)
+            if not result:
+                msg = "Connect failed."
+            else:
+                msg = "Connected"
+                self.connectButton.setText("Disconnect")
+                self.deviceLabel.setText(self._jlink._part_number)
+                self._is_connected = True
+                self._adapter_serial_number = serial_number
+        self.statusBar().showMessage(msg)
         return
 
     def flash_mcu(self):
@@ -82,52 +97,78 @@ class MainWindow(QtGui.QMainWindow, Ui_MainWindow):
             file_name = self.pathLineEdit.text()
             if os.path.isfile(file_name):
                 offset = int("0x" + self.startAddrLineEdit.text(), 16)
-                self._jlink.erase_chip()
+                result = self._jlink.erase_chip()
+                if not result:
+                    self.init_connect_group()
+                    self._jlink.close()
+                    msg = "Erase failed."
+                    self.statusBar().showMessage(msg)
+                    return
                 self._jlink.download(file_name, offset)
                 if self.resetMCUCheckBox.checkState():
                     self._jlink.reset(False)
-                self.statusLabel.setText("Program Done!")
+                msg = "Program done."
             else:
-                self.statusLabel.setText("Please select a file to download.")
-            return
+                msg = "Please select a file to download."
         else:
-            self.statusLabel.setText("Please connect to device.")
+            msg = "Please connect to device."
+        self.statusBar().showMessage(msg)
+        return
+
+    def erase_mcu(self):
+        if self._is_connected:
+            result = self._jlink.erase_chip()
+            if not result:
+                self.init_connect_group()
+                self._jlink.close()
+                msg = "Erase failed."
+            else:
+                msg = "Erase done."
+        else:
+            msg = "Please connect to device."
+        self.statusBar().showMessage(msg)
+        return
 
     def scan_adapter(self):
         num_adapters, adapter_list = self._jlink.get_usb_adapter_list()
         combo_list = self.jlinkDeviceCombo.count()
-        # Attached devices changed, need to refresh combox list
-        if combo_list != num_adapters:
-            selected_adapter = "0"
-            if combo_list != 0:
-                selected_adapter = self.jlinkDeviceCombo.currentText()
-            self.jlinkDeviceCombo.clear()
 
-            index = -1
-            for i in range(num_adapters):
-                adapter = adapter_list[i]
-                if unicode(adapter.SerialNumber) == selected_adapter:
-                    index = i
-                self.jlinkDeviceCombo.addItem(unicode(adapter.SerialNumber))
+        if (combo_list == 0) and (num_adapters == 0):
+            return
 
-            # The original device is removed.
-            if index == -1:
-                if self._is_connected:
-                    self.connect_mcu()
-                if num_adapters != 0:
-                    index = 0
+        selected_adapter_sn = "0"
+        if combo_list != 0:
+            if self._is_connected:
+                selected_adapter_sn = self._adapter_serial_number
+            else:
+                selected_adapter_sn = self.jlinkDeviceCombo.currentText()
+        self.jlinkDeviceCombo.clear()
 
-            self.jlinkDeviceCombo.setCurrentIndex(index)
+        index = -1
+        for i in range(num_adapters):
+            adapter = adapter_list[i]
+            if unicode(adapter.SerialNumber) == selected_adapter_sn:
+                index = i
+            self.jlinkDeviceCombo.addItem(unicode(adapter.SerialNumber))
+
+        # Original device is removed
+        if index == -1:
+            if self._is_connected:
+                self.connect_mcu()
+            if num_adapters != 0:
+                index = 0    
+        self.jlinkDeviceCombo.setCurrentIndex(index)
         return
 
-    def mainloop(self):
-        self.scan_adapter()
-        Timer(3, self.mainloop).start()
-        return
+    def init_timer(self):
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.scan_adapter)
+        self.timer.start(1000)
+
 
 # Main Function
 if __name__ == '__main__':
-    Program = QtGui.QApplication(sys.argv)
-    Window = MainWindow()
-    Window.show()
-    os._exit(Program.exec_())
+    app = QtGui.QApplication(sys.argv)
+    mainWin = Programmer()
+    mainWin.show()
+    os._exit(app.exec_())

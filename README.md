@@ -5,12 +5,16 @@ Jlink Python Programming GUI Tool
 We use Python+Pyside make a GUI programming tool. By calling JLinkARM.Dll, it can access the device via C2 and SWD interface. The EFM8 and EFM32 which are C8051 and ARM cortex M0/M3/M4 core are in the latest Segger JLinkARM.dll support list. It can download hex file, and also binary file with offset setting. 
 
 ## 2 Preparation
-Detailed information on Python + Pyside setup as follow
-
 ### 2.1 Install Python 2.7 32-bit
 The reason for 32-bit python is because many dll file is 32-bit version.
 
 Goto https://www.python.org/downloads/release/python-2712/ and install the python 2.7 32-bit. 
+
+And also install enum package
+
+```
+$pip install enum
+```
 
 ### 2.2 Install Pyside
 Goto https://info.qt.io/download-qt-for-application-development, install QT creator. 
@@ -45,56 +49,76 @@ C:\Program Files (x86)\SEGGER\JLink_V618c\JLinkARM.dll
 Now we need to know elements that the programming tool required. It requires a GUI frame mainwindow.py for what the tools looks like; JlinkARM.dll for communication with device; main control routine programmer.py; jlink.py take response on communication between main control routine and JLinkARM.dll. 
 
 ### 3.1 GUI frame
-Run the Qt Creator, create new project. Make a GUI base on requirement of the tool. 
-
-![QT Creator][Qt_creator]
-
-1. These are components of the UI, just simply drag and drop to right place on the window. 
-2. This is a __Push Button__ component. 
-3. Change the button name to an easy understand one __connectButton__
-
-Then save the project, we got mainwindow.ui file. Convert it into python file mainwindow.py by using following command in CMD console.
-
-```
-$pyside-uic mainwindow.ui - o mainwindow.py
-```
-
-Open the mainwindow.py. 
-
-```python
-from PySide import QtCore, QtGui
-
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(605, 360)
-        self.centralWidget = QtGui.QWidget(MainWindow)
-        self.centralWidget.setObjectName("centralWidget")
-        self.flashMCUGroup = QtGui.QGroupBox(self.centralWidget)
-        self.flashMCUGroup.setGeometry(QtCore.QRect(10, 90, 580, 110))
-        self.flashMCUGroup.setObjectName("flashMCUGroup")
-        self.startAddrLabel = QtGui.QLabel(self.flashMCUGroup)
-        self.startAddrLabel.setGeometry(QtCore.QRect(10, 70, 120, 20))
-        self.startAddrLabel.setObjectName("startAddrLabel")
-        self.statusLabel = QtGui.QLabel(self.centralWidget)
-        self.statusLabel.setGeometry(QtCore.QRect(20, 250, 450, 15))
-        self.statusLabel.setObjectName("statusLabel")
-        self.resetMCUCheckBox = QtGui.QCheckBox(self.flashMCUGroup)
-        self.resetMCUCheckBox.setGeometry(QtCore.QRect(260, 70, 140, 20))
-        self.resetMCUCheckBox.setObjectName("resetMCUCheckBox")
-        self.pathLineEdit = QtGui.QLineEdit(self.flashMCUGroup)
-        self.pathLineEdit.setGeometry(QtCore.QRect(90, 30, 400, 20))
-        self.pathLineEdit.setObjectName("pathLineEdit")
-        self.flashButton = QtGui.QPushButton(self.flashMCUGroup)
-        self.flashButton.setGeometry(QtCore.QRect(500, 70, 75, 23))
-        self.flashButton.setObjectName("flashButton")
-```
-
-It defines every components of the GUI, including the name, position, size, QtGui module name. etc. Once user get familiar with the QtGui, user can directly modify this file without using QT Creator tool any more.
-
 Here is the final view of the programmer tool 
 
 ![Programmer view][Programmer]
+
+It is convenient to make a GUI frame using PySide. 
+The GUI contains Window Title, Menu, Status Bar and Central Widget. 
+
+#### 3.1.1 Window Title
+Define Window Title and Fixed size. 
+
+```python
+self.setWindowTitle("PyProgrammer")
+self.setFixedSize(640, 260)
+```
+
+#### 3.1.2 Menu
+Create Help Menu and About dialog. 
+
+```python
+def createMenu(self):
+    self.aboutAct = QtGui.QAction("&About", self,
+            statusTip="Show the PyProgrammer's About box",
+            triggered=self.about)
+    self.helpMenu = self.menuBar().addMenu("&Help")
+    self.helpMenu.addAction(self.aboutAct)        
+
+def about(self):
+    QtGui.QMessageBox.about(self, "About PyProgrammer",
+            "Copyright Silicon Laboratories, Inc 2018. All rights reserved.\n\n\r"
+            "PyProgrammer v1.0 is based on Qt Pyside and SEGGER JlinkARM.\n\n\r"
+            "The PyProgrammer example demonstrates how to write a "
+            "modern GUI flash programmer applications using Qt Pyside.\n\n\r"
+            "This program uses third party libraries covered by the LGPL.\n\r"
+            "See the file LGPL.txt for details.")
+```
+
+#### 3.1.3 Status Bar
+Create Status Bar. 
+
+```python
+def createStatusBar(self):
+    self.statusBar().showMessage("Ready")
+```
+
+#### 3.1.4 Central Widget
+The main layout of Central Widget includes two main groups - "Connection" and "Flash MCU". The "Flash MCU" includes two subgroups - "Browse" and "Flash". 
+
+__Main Group Layout__
+
+```python
+mainLayout = QtGui.QVBoxLayout(self.centralWidget)
+mainLayout.addWidget(self.createConnectGroup())
+mainLayout.addWidget(self.createFlashMCUGroup())
+self.setLayout(mainLayout)
+```
+
+__Sub Group Layout__
+
+```python
+    def createFlashMCUGroup(self):
+        groupBox = QtGui.QGroupBox("Flash MCU
+        ",self.centralWidget)
+
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(self.createBrowseGroup())
+        layout.addWidget(self.createFlashGroup())
+
+        groupBox.setLayout(layout)
+        return groupBox
+```
 
 
 ### 3.2 Main Control 
@@ -102,12 +126,13 @@ The purpose of the tool is to select a image file, connect to device, flash the 
 
 #### 3.2.1 Push Button Events
 The Pyside provides interface to connect button press event to dedicate function. 
-The tool has three buttons -  Browse, Connect and Flash. 
+The tool has four buttons -  Browse, Connect, Erase and Flash. 
 
 ```python
 self.browseButton.pressed.connect(self.browse_file)
 self.connectButton.pressed.connect(self.connect_mcu)
 self.flashButton.pressed.connect(self.flash_mcu)
+self.eraseButton.pressed.connect(self.erase_mcu)
 
 def browse_file(self):
 	...
@@ -120,24 +145,35 @@ def connect_mcu(self):
 def flash_mcu(self):
 	...
 	return
+
+def erase_mcu(self):
+    ...
+    return
 ``` 
 
-According above code, the three button pressed event was connected to the three functions: browse_file(), connect_mcu(), flash_mcu(). Once user click on the button, it will call the connected function. 
+According above code, the four button pressed event was connected to the dedicate functions. Once user click on the button, it will call the connected function. 
 
 #### 3.2.2 File Browser
 The QtGui provides QFileDialog.getOpenFileName to browse the image file. User can define the window name, file default location, file extension. etc
 
 ```python
 def browse_file(self):
-    file_name, filter = QtGui.QFileDialog.getOpenFileName(
+    file_name, file_filter = QtGui.QFileDialog.getOpenFileName(
         self, 'Open Download file', "./hex_bin",
         'Intel Hex Files(*.hex);;Binary Files(*.bin);;All Files (*)')
     if file_name:
         self.pathLineEdit.setText(file_name)
+    # Set start address editable with bin file only.
+    split_name = file_name.split(".")
+    if split_name[-1].lower() == "hex":
+        self.startAddrLineEdit.setText("00000000")
+        self.startAddrLineEdit.setReadOnly(True)
+    if split_name[-1].lower() == "bin":
+        self.startAddrLineEdit.setReadOnly(False)
     return
 ```
 
-The above open a file dialog, looking for hex, bin and all files. 
+The above codes open a file dialog, looking for hex, bin and all files. 
 
 ![Browse file][Browse_file]
 
@@ -149,8 +185,7 @@ Adding item into Combox as follows:
 
 ```python
 # Adding debug interface into Debug IF Combox
-self.debugIFCombo.addItem("SWD")
-self.debugIFCombo.addItem("C2")
+self.debugIFCombo.addItems("SWD C2".split())
 
 # Adding new adapter into Adapter Combox list
 self.jlinkDeviceCombo.addItem(unicode(adapter.SerialNumber))
@@ -161,7 +196,7 @@ Other common usage of Combox as follows:
 
 ```python
 # Get current selected Combox item. 
-ifc = self.debugIFCombo.currentText()
+serial_number = self.debugIFCombo.currentText()
 
 # Checking if any adapter exist by count Combox items. 
 if self.jlinkDeviceCombo.count() == 0:
@@ -175,13 +210,12 @@ self.jlinkDeviceCombo.setCurrentIndex(index)
 ```
 
 #### 3.2.4 Part Number and Status Display
-The Label component made for the purpose.
+The Label and Status Bar components made for the purpose.
 
 ```python
-# Show message on status label
-self.statusLabel.setText("Program Done!")
-# Show error message on status label 
-self.statusLabel.setText("Please connect to device.")
+# Show message on status bar
+msg = "Please connect to device."
+self.statusBar().showMessage(msg)
 
 # Show detect part number on device Label 
 self.deviceLabel.setText(self._jlink._part_number)
@@ -202,15 +236,18 @@ self.startAddrLineEdit.setText("00000000")
 ```
 
 #### 3.2.6 Scan Adapter Automatic 
-The dynamic scan adapter is basic requirement of a programmer tool. Using Python threading Timer can achieve the purpose. 
+The dynamic scan adapter is basic requirement of a programmer tool. Using Python QTimer can achieve the purpose. 
 
 ```python
-from threading import Timer
-# Scan adapter every 3 seconds
-def mainloop(self):
-    self.scan_adapter()
-    Timer(3, self.mainloop).start()
+def scan_adapter(self):
+    num_adapters, adapter_list = self._jlink.get_usb_adapter_list()
+    ...
     return
+
+def init_timer(self):
+    self.timer = QtCore.QTimer(self)
+    self.timer.timeout.connect(self.scan_adapter)
+    self.timer.start(1000)
 ```
 
 ### 3.3 JLink function
@@ -224,7 +261,7 @@ There are several useful interface functions used in this programmer tool.
 self._jlink = jlink.JLinkDll()
 
 # Connect jLink device with serial_number, debug interface ifc
-retval = self._jlink.connect(long(serial_number), None, [ifc])
+result = self._jlink.connect(long(serial_number), None, ifc)
 
 # Close JLink connection
 self._jlink.close()
@@ -242,45 +279,9 @@ num_adapters, adapter_list = self._jlink.get_usb_adapter_list()
 ```
 
 
-
-## 4 User Guide
-   Attached STK board to the system via USB cable. for instance, EFM32PG1B STK board. 
-Run programmer.py in CMD console, the GUI tool displayed in screen. 
-
-### 4.1 Connect to Device
-![PT connect][PT_connect]
-
-1. Select the adapter with correct serial number in __J-link Device S/N__ Combox. 
-2. Choose SWD from __Debug IF__ Combox. 
-3. Click on __Connect__ button. 
-
-### 4.2 Select Download File
-![PT select][PT_select]
-
-1. The part number displayed if the connection is done.  
-2. Press __Browse__ button to select a hex or bin file for flashing. 
-3. Check the __Reset MCU after flashing__ if wants device automatic reset after flashing. 
-4. Click on __Flash__ button to start firmware flashing.  
-
-### 4.3 Flashing Device
-The Segger J-link v6.18c pop-up a progress dialog
-
-![PT flashing][PT_flashing]
-
-Once the flashing is done, the GUI tool display status message __Program Done!__
-
-![PT program done][PT_program_done]
-
-
-
-[PT_connect]:img/pt-connect.png
-[PT_select]:img/pt-select.png
-[PT_flashing]:img/pt-flashing.png
-[PT_program_done]:img/pt-program-done.png
 [Segger_jlink_download]:img/segger-jlink-download.png
 [PyCharm]:img/pycharm.png
 [PySide_doc]:img/pyside-doc.png
-[Qt_creator]:img/qt-creator.png
 [Programmer]:img/programmer.png
 [Browse_file]:img/browse-file.png
 

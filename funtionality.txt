@@ -1,0 +1,129 @@
+
+Comparison between Commander and PyProgrammer on functionalities.
+
+J-Link general:
+    --ip
+    --serialno -s
+    --usb -u
+
+Debugger parameters:
+    --speed
+    --targetif <SWD|JTAG|C2>  (PyProgrammer)
+
+flash <filename>
+    J-Link general
+    Debugger parameters
+    --file -f (support multiple) (PyProgrammer)
+    --reset                      (PyProgrammer)   
+    --verify
+    --address                    (PyProgrammer)   
+    --patch 0x00001234=A5 (support multiple)
+    --masserase                  (PyProgrammer)   
+    --token <key=value>
+    --tokenfile <filename>
+
+readmem
+    J-Link general
+    Debugger parameters
+    --outfile -o
+    --print
+    --patch 0x00001234=A5 (support multiple)
+    
+    --region @mainflash (support multiple)
+    or
+    --address 0x0000000
+    --length  0x1000
+    or
+    --range 0x0000000-0x0001000 (support multiple)
+
+tokendump
+    J-Link general
+    Debugger parameters
+    --outfile -o
+    --print
+    --token <token name>
+
+convert
+    --infile -i (support multiple)
+    --address
+    --outfile -o
+    --patch 0x00001234=A5 (support multiple)
+    --token <key=value>
+    --tokenfile <filename>
+
+keygen <outfile>
+
+readprotect <enable|disable>
+    J-Link general
+    Debugger parameters
+
+writeprotect <enable|disable>
+    J-Link general
+    Debugger parameters
+    
+    --region @mainflash (support multiple)
+    or
+    --address 0x0000000
+    --length  0x1000
+    or
+    --range 0x0000000-0x0001000 (support multiple)
+    or
+    --page n (support multiple)
+
+pageerase
+    J-Link general
+    Debugger parameters
+    
+    --region @userpage (support multiple)
+    or
+    --address 0x0000000
+    --length  0x1000
+    or
+    --range 0x0000000-0x0001000 (support multiple)
+    or
+    --page n (support multiple)
+
+masserase               (PyProgrammer)
+    J-Link general
+    Debugger parameters
+
+lock <type> <enable|disable>
+    J-Link general
+    Debugger parameters
+
+    Exx32 types:
+        debug
+        masserase
+        AAP-warning-will-permanently-disable-debug-access
+
+chipconfig <type [action]>
+    EFR32 types:
+        bootloader [enable|disable]
+        pinresettype [soft|hard]
+
+recover
+    J-Link general
+
+installfw <filename>
+    J-Link general
+
+    --boardoverride
+    --variantoverride
+
+kitinfo
+    J-Link general
+
+mcuinfo             (PyProgrammer)
+    J-Link general
+    Debugger parameters
+
+kitconfig
+    J-Link general
+
+    --dbgmode [mode]
+    --ipconfig
+    --cdc [enable|disable]
+    --msd [enable|disable]
+
+pinreset
+    J-Link general
